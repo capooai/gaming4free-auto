@@ -1,9 +1,9 @@
 import os, sys, time, urllib.request, json
+import subprocess
 from seleniumbase import SB
-from selenium.webdriver.common.action_chains import ActionChains
 
 # ==========================================
-# 💡 核心配置 (适配全新 g4f.gg 界面)
+# 💡 核心配置 (G4F.GG 终极物理外挂版)
 # ==========================================
 TARGET_URL = "https://g4f.gg/renqi" 
 MC_USERNAME = "renqi"
@@ -21,16 +21,24 @@ def send_tg(msg):
         except:
             pass
 
-print(f"\n===== 🚀 开始执行极速续期 (G4F.GG 赛博朋克全新版) =====")
+print(f"\n===== 🚀 开始执行极速续期 (终极物理盲狙版) =====")
 
 proxy_str = "socks5://127.0.0.1:40000"
 
 with SB(uc=True, proxy=proxy_str, headless=False) as sb:
     try:
+        print("⏳ 正在为虚拟显示器安装 xdotool 物理鼠标引擎...")
+        # 预装 X11 系统级鼠标工具，过程静默
+        os.system("sudo apt-get update > /dev/null 2>&1")
+        os.system("sudo apt-get install -y xdotool x11-utils > /dev/null 2>&1")
+
         print(f"🌐 正在通过 WARP 访问新版目标网址: {TARGET_URL}")
         sb.open(TARGET_URL)
-        
         sb.sleep(6) 
+        
+        # 🌟 必须最大化窗口，确保网页视图的中心完美对齐虚拟屏幕的中心！
+        sb.driver.maximize_window()
+        sb.sleep(1)
         
         os.makedirs("screenshots", exist_ok=True)
         sb.save_screenshot("screenshots/1_page_loaded.png")
@@ -42,8 +50,7 @@ with SB(uc=True, proxy=proxy_str, headless=False) as sb:
         except:
             print("ℹ️ 未找到输入框或无需填入，继续下一步。")
 
-        print("🚀 寻找 [+ ADD 90 MIN] 核心按钮并执行降维打击...")
-        
+        print("🚀 触发 [+ ADD 90 MIN] 核心按钮...")
         js_click_code = """
         let clicked = false;
         let els = document.querySelectorAll('button, a, input, div, span');
@@ -58,45 +65,45 @@ with SB(uc=True, proxy=proxy_str, headless=False) as sb:
         }
         return clicked;
         """
-        
         is_clicked = sb.execute_script(js_click_code)
-        
-        if is_clicked:
-            print("🖱️ JavaScript 强制穿透点击成功！")
-        else:
-            print("⚠️ JS 未能点击，尝试备用 XPath 方案...")
+        if not is_clicked:
             sb.click('xpath=//*[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "add 90")]')
 
-        print("⏳ 盲等 6 秒钟，让 CF 盾在静默中完全加载 (严禁探测)...")
+        print("⏳ 盲等 6 秒钟，等待 CF 盾在屏幕正中央展开...")
+        print("⚠️ [系统警告] 已切断所有 WebDriver 探针，开启静默隐身模式！")
         time.sleep(6) 
         
+        print("🛡️ 启动【全盲物理狙击】模块，准备跨维度开火！")
         try:
-            print("🛡️ 启动【隔山打牛】物理盲狙模式，绝不进入危险框架！")
-            
-            # 🌟 核心杀手锏：在主页面上，直接找到 CF 盾的外壳 (iframe 元素本身)
-            iframe_xpath = '//iframe[contains(@src, "cloudflare") or contains(@src, "turnstile") or contains(@title, "Cloudflare")]'
-            cf_iframe = sb.driver.find_element("xpath", iframe_xpath)
-            
-            # 🌟 调取原生鼠标动作链，瞄准 iframe 外壳的正中心，直接扣动扳机！
-            # 因为我们没有 switch_to_frame，CF 根本察觉不到有机器人在试图控制它！
-            ActionChains(sb.driver).move_to_element(cf_iframe).click().perform()
-            
-            print("🖱️ 已从外部成功狙击 CF 盾！等待验证转圈...")
-            time.sleep(6)
-            
+            # 使用 xdpyinfo 获取 Github Actions 虚拟屏幕的真实分辨率
+            out = subprocess.check_output("xdpyinfo | grep dimensions", shell=True).decode()
+            dim_str = out.strip().split()[1]
+            w, h = map(int, dim_str.split('x'))
         except Exception as e:
-            print(f"⏩ 狙击模块跳过 (未找到盾或已被自动放行): {e}")
+            print(f"⚠️ 分辨率雷达探测失败，回退至安全坐标... ({e})")
+            w, h = 1024, 768
 
-        print("⏳ 等待最终续期结果加载 (等待 6 秒)...")
-        time.sleep(6)
+        # 🌟 核心物理运算：弹窗绝对居中，复选框在弹窗偏左。向下偏移 30px 绕开浏览器顶部地址栏 UI。
+        target_x = (w // 2) - 80
+        target_y = (h // 2) + 30 
+        
+        print(f"🎯 锁定屏幕绝对坐标: ({target_x}, {target_y})")
+        print("🖱️ 物理鼠标按下扳机！")
+        
+        # 调用原生 Linux xdotool 发送真正的硬件级鼠标移动与点击事件！(CF 根本无法察觉)
+        os.system(f"xdotool mousemove {target_x} {target_y} click 1")
+        
+        print("⏳ 射击完毕！静默等待 8 秒，让子弹飞一会儿 (等待盾转圈通过)...")
+        time.sleep(8)
         
         try:
             sb.save_screenshot("screenshots/2_result.png")
+            print("📸 最终战况截图已保存。")
         except:
             print("⚠️ 截图保存失败。")
 
         print("✅ 流程执行完毕！")
-        send_tg(f"✅ 服务器 [{MC_USERNAME}] 续期脚本运行完毕！\n请查阅 GitHub 最新截图确认 CF 盾是否通过以及时间是否增加。")
+        send_tg(f"✅ 服务器 [{MC_USERNAME}] 续期脚本运行完毕！\n【破盾方式: 物理盲狙】请查阅 GitHub 最新截图确认 CF 盾是否通过以及时间是否增加。")
 
     except Exception as e:
         print(f"❌ 发生致命错误: {e}")
