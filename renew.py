@@ -1,10 +1,6 @@
 import os, sys, time, urllib.request, json
 from seleniumbase import SB
 
-# ==========================================
-# 💡 核心配置 (适配全新 g4f.gg 界面)
-# ==========================================
-# ⚠️ 注意这里换成了新域名
 TARGET_URL = "https://g4f.gg/renqi" 
 MC_USERNAME = "renqi"
 
