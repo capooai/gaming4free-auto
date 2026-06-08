@@ -22,7 +22,7 @@ def send_tg(msg):
 
 print(f"\n===== 🚀 开始执行极速续期 (终极双重核武狙击版) =====")
 
-proxy_str = "socks5://127.0.0.1:40000"
+proxy_str = "socks5://127.0.0.1:7928"
 
 with SB(uc=True, proxy=proxy_str, headless=False, window_size="1920,1080") as sb:
     try:
