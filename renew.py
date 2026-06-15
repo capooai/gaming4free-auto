@@ -1,51 +1,46 @@
-import os, sys, time, urllib.request, json
+import os, sys, time, urllib.request, json, re
 from seleniumbase import SB
 
 # ==========================================
-# 💡 核心配置 (G4F.GG 双重核武制导版)
+# 💡 G4F.GG 自动续期脚本 (生产环境稳定版)
 # ==========================================
-TARGET_URL = "https://g4f.gg/rena" 
-MC_USERNAME = "rena"
+TARGET_URL = "https://g4f.gg/renqi" 
+MC_USERNAME = "renqi"
 
 TG_TOKEN = os.getenv("TG_TOKEN", "")
 TG_CHAT = os.getenv("TG_CHAT_ID", "")
 
-def send_tg(msg):
+def send_tg(status, time_str):
     if TG_TOKEN and TG_CHAT:
         try:
+            msg = f"🤖 节点 [{MC_USERNAME}]\n状态: {status}\n剩余时间: {time_str}"
             url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-            data = json.dumps({"chat_id": TG_CHAT, "text": f"🤖 G4F 自动续期:\n{msg}"}).encode('utf-8')
+            data = json.dumps({"chat_id": TG_CHAT, "text": msg}).encode('utf-8')
             req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
             urllib.request.urlopen(req, timeout=10)
         except:
             pass
 
-print(f"\n===== 🚀 开始执行极速续期 (终极双重核武狙击版) =====")
+print("\n===== 开始执行 G4F 自动续期 =====")
 
-proxy_str = "socks5://127.0.0.1:7928"
+proxy_str = "socks5://127.0.0.1:40000"
 
 with SB(uc=True, proxy=proxy_str, headless=False, window_size="1920,1080") as sb:
     try:
-        print("⏳ 正在为虚拟显示器安装 xdotool 物理鼠标引擎...")
+        print("初始化物理鼠标依赖...")
         os.system("sudo apt-get update > /dev/null 2>&1")
         os.system("sudo apt-get install -y xdotool > /dev/null 2>&1")
 
-        print(f"🌐 正在通过 WARP 访问新版目标网址: {TARGET_URL}")
+        print(f"访问目标网址: {TARGET_URL}")
+        sb.driver.set_window_position(0, 0)
         sb.open(TARGET_URL)
         sb.sleep(6) 
         
         os.makedirs("screenshots", exist_ok=True)
         sb.save_screenshot("screenshots/1_page_loaded.png")
 
-        print("✍️ 尝试填入游戏ID (OPTIONAL)...")
-        try:
-            sb.type('input[placeholder*="Steve"], input[placeholder*="Player"]', MC_USERNAME, timeout=4)
-            print("✅ ID 填入成功！")
-        except:
-            print("ℹ️ 未找到输入框或无需填入，继续下一步。")
-
-        print("🚀 触发 [+ ADD 90 MIN] 核心按钮...")
-        
+        print("尝试点击续期按钮...")
+        # 去除 return 的纯动作 JS
         js_click_code = """
         let els = document.querySelectorAll('button, a, input, div, span');
         for (let i = els.length - 1; i >= 0; i--) {
@@ -64,80 +59,48 @@ with SB(uc=True, proxy=proxy_str, headless=False, window_size="1920,1080") as sb
         except:
             pass
 
-        print("⏳ 盲等 6 秒钟，等待 CF 盾在屏幕上展开...")
+        print("等待人机验证加载...")
         time.sleep(6) 
         
-        print("🛡️ 启动【穿甲雷达】模块，递归撕裂 Shadow DOM！")
+        print("执行验证框区域点击 (4x4 网格)...")
+        xs = [790, 810, 830, 850]
+        ys = [540, 560, 580, 600]
         
-        # 🌟 修复：引入递归函数，强行穿透所有 Shadow DOM 黑盒寻找 iframe
-        js_radar = """
-        (function() {
-            function getIframe(root) {
-                let iframes = root.querySelectorAll('iframe');
-                for(let f of iframes) {
-                    let s = (f.src || '').toLowerCase();
-                    if(s.includes('cloudflare') || s.includes('turnstile')) return f;
-                }
-                let all = root.querySelectorAll('*');
-                for(let el of all) {
-                    if(el.shadowRoot) {
-                        let found = getIframe(el.shadowRoot);
-                        if(found) return found;
-                    }
-                }
-                return null;
-            }
-            
-            let cf = getIframe(document);
-            if (cf) {
-                let rect = cf.getBoundingClientRect();
-                let ui_y = 85; 
-                let target_x = rect.left + 30;
-                let target_y = rect.top + ui_y + (rect.height / 2);
-                document.body.setAttribute('data-cf-coords', Math.round(target_x) + ',' + Math.round(target_y));
-            } else {
-                document.body.setAttribute('data-cf-coords', 'NOT_FOUND');
-            }
-        })();
-        """
-        sb.execute_script(js_radar)
+        for y in ys:
+            for x in xs:
+                os.system(f"xdotool mousemove {x} {y} click 1")
+                time.sleep(0.1)
         
-        coords = None
-        try:
-            coords = sb.get_attribute("body", "data-cf-coords")
-        except:
-            pass
-        
-        # 🌟 双重核武判定：如果雷达找到就用雷达，找不到直接启用黄金坐标！
-        if coords and coords != "NOT_FOUND":
-            target_x, target_y = coords.split(",")
-            print(f"🎯 穿甲雷达精确锁定 CF 盾绝对靶心: ({target_x}, {target_y})")
-        else:
-            print("⚠️ 雷达未能穿透深层黑盒，启用【黄金盲狙坐标】！")
-            # 在 1920x1080 且有 85px 浏览器顶栏的情况下，绝对居中遮罩的复选框永远在这！
-            target_x, target_y = "820", "580"
-            print(f"🎯 锁定黄金物理坐标: ({target_x}, {target_y})")
-
-        print("🖱️ 物理鼠标按下扳机！")
-        os.system(f"xdotool mousemove {target_x} {target_y} click 1")
-        
-        print("⏳ 射击完毕！静默等待 8 秒，让子弹飞一会儿 (等待盾转圈通过)...")
+        print("点击完成，等待验证结果...")
         time.sleep(8)
+        
+        print("获取页面剩余时间...")
+        # 🌟 核心修复：将网页全文拉取到 Python 中，使用 Python 提取时间，彻底避开 JS 语法限制
+        page_text = sb.get_text("body")
+        
+        time_match = re.search(r'\d{2}:\d{2}:\d{2}', page_text)
+        remaining_time = time_match.group(0) if time_match else "未知"
+        print(f"提取到时间: {remaining_time}")
             
+        page_text_lower = page_text.lower()
+        if "90 minutes added" in page_text_lower or "extended this server recently" in page_text_lower:
+            status = "✅ 续期成功"
+        else:
+            status = "⚠️ 状态未知"
+
         try:
             sb.save_screenshot("screenshots/2_result.png")
-            print("📸 最终战况截图已保存。")
         except:
-            print("⚠️ 截图保存失败。")
+            pass
 
-        print("✅ 流程执行完毕！")
-        send_tg(f"✅ 服务器 [{MC_USERNAME}] 续期脚本运行完毕！\n【破盾方式: 双重核武物理盲狙】请查阅 GitHub 截图确认战果。")
+        print(f"流程执行完毕。状态: {status}")
+        send_tg(status, remaining_time)
 
     except Exception as e:
-        print(f"❌ 发生致命错误: {e}")
+        print(f"发生异常: {e}")
         try:
             os.makedirs("screenshots", exist_ok=True)
             sb.save_screenshot("screenshots/error.png")
         except:
             pass
-        send_tg(f"❌ 自动续期崩溃: {e}")
+        send_tg("❌ 发生异常失败", "未知")
